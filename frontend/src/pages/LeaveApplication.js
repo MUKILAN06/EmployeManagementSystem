@@ -16,41 +16,25 @@ const LeaveApplication = () => {
   }, []);
 
   const fetchHistory = async () => {
-    // #region agent log
-    fetch('http://127.0.0.1:7826/ingest/fff88e42-250e-4036-8cd7-3c0ee2b7c5c6',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'2f3b79'},body:JSON.stringify({sessionId:'2f3b79',runId:'pre-fix',hypothesisId:'H3',location:'LeaveApplication.js:fetchHistory',message:'Fetch leave history start',data:{hasToken:!!localStorage.getItem('token')},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
     try {
       const res = await api.get('/employee/leaves');
-      // #region agent log
-      fetch('http://127.0.0.1:7826/ingest/fff88e42-250e-4036-8cd7-3c0ee2b7c5c6',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'2f3b79'},body:JSON.stringify({sessionId:'2f3b79',runId:'pre-fix',hypothesisId:'H3',location:'LeaveApplication.js:fetchHistory',message:'Fetch leave history success',data:{count:Array.isArray(res?.data)?res.data.length:null,status:res?.status},timestamp:Date.now()})}).catch(()=>{});
-      // #endregion
       setHistory(res.data);
     } catch (err) {
-      // #region agent log
-      fetch('http://127.0.0.1:7826/ingest/fff88e42-250e-4036-8cd7-3c0ee2b7c5c6',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'2f3b79'},body:JSON.stringify({sessionId:'2f3b79',runId:'pre-fix',hypothesisId:'H3',location:'LeaveApplication.js:fetchHistory',message:'Fetch leave history error',data:{status:err?.response?.status,hasToken:!!localStorage.getItem('token')},timestamp:Date.now()})}).catch(()=>{});
-      // #endregion
-      console.error(err);
+      console.error('Error fetching leave history:', err);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    // #region agent log
-    fetch('http://127.0.0.1:7826/ingest/fff88e42-250e-4036-8cd7-3c0ee2b7c5c6',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'2f3b79'},body:JSON.stringify({sessionId:'2f3b79',runId:'pre-fix',hypothesisId:'H1',location:'LeaveApplication.js:handleSubmit',message:'Submit leave request start',data:{startDate:formData.startDate,endDate:formData.endDate,reasonLen:(formData.reason||'').length,hasToken:!!localStorage.getItem('token')},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
     try {
       await api.post('/employee/leave/request', formData);
-      // #region agent log
-      fetch('http://127.0.0.1:7826/ingest/fff88e42-250e-4036-8cd7-3c0ee2b7c5c6',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'2f3b79'},body:JSON.stringify({sessionId:'2f3b79',runId:'pre-fix',hypothesisId:'H1',location:'LeaveApplication.js:handleSubmit',message:'Submit leave request success',data:{},timestamp:Date.now()})}).catch(()=>{});
-      // #endregion
       setFormData({ startDate: '', endDate: '', reason: '' });
       fetchHistory();
+      alert('Leave request submitted successfully!');
     } catch (err) {
-      // #region agent log
-      fetch('http://127.0.0.1:7826/ingest/fff88e42-250e-4036-8cd7-3c0ee2b7c5c6',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'2f3b79'},body:JSON.stringify({sessionId:'2f3b79',runId:'pre-fix',hypothesisId:'H1',location:'LeaveApplication.js:handleSubmit',message:'Submit leave request error',data:{status:err?.response?.status,hasToken:!!localStorage.getItem('token')},timestamp:Date.now()})}).catch(()=>{});
-      // #endregion
-      alert('Error applying for leave');
+      const msg = err?.response?.data || 'Error applying for leave';
+      alert(typeof msg === 'string' ? msg : 'Error applying for leave');
     } finally {
       setLoading(false);
     }
@@ -127,16 +111,16 @@ const LeaveApplication = () => {
           {history.map((leave) => (
             <div key={leave.id} className="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex items-center justify-between group hover:border-blue-200 transition-all">
               <div className="flex items-center gap-4">
-                <div className={`p-3 rounded-2xl ${statusColors[leave.status].split(' ')[0]}`}>
-                   <Clock size={20} className={statusColors[leave.status].split(' ')[1]} />
+                <div className={`p-3 rounded-2xl ${statusColors[leave.status]?.split(' ')[0] || 'bg-slate-100'}`}>
+                   <Clock size={20} className={statusColors[leave.status]?.split(' ')[1] || 'text-slate-500'} />
                 </div>
                 <div>
                   <h4 className="font-bold text-slate-900">{leave.startDate} to {leave.endDate}</h4>
                   <p className="text-sm text-slate-500">{leave.reason}</p>
                 </div>
               </div>
-              <div className={`px-4 py-1.5 rounded-full text-xs font-bold border uppercase tracking-wider ${statusColors[leave.status]}`}>
-                {leave.status.replace('_', ' ')}
+              <div className={`px-4 py-1.5 rounded-full text-xs font-bold border uppercase tracking-wider ${statusColors[leave.status] || 'bg-slate-100 text-slate-600 border-slate-200'}`}>
+                {leave.status?.replace('_', ' ')}
               </div>
             </div>
           ))}

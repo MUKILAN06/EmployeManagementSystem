@@ -11,8 +11,12 @@ const MyTasks = () => {
   }, []);
 
   const fetchTasks = async () => {
-    const res = await api.get('/employee/tasks');
-    setTasks(res.data);
+    try {
+      const res = await api.get('/employee/tasks');
+      setTasks(res.data || []);
+    } catch (err) {
+      console.error('Error fetching tasks:', err);
+    }
   };
 
   const handleComplete = async (id) => {
