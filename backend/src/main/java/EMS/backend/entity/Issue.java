@@ -49,5 +49,8 @@ public class Issue {
 
     private LocalDateTime verifyingAt;
 
+    @Builder.Default
+    private boolean resolved = false;
+
     private LocalDateTime resolvedAt;
 }

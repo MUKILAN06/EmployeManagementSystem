@@ -71,6 +71,7 @@ public class IssueServiceImpl implements IssueService {
             issue.setVerifyingAt(LocalDateTime.now());
         } else if ("COMPLETED".equalsIgnoreCase(status)) {
             issue.setResolvedAt(LocalDateTime.now());
+            issue.setResolved(true);
             if (resolutionAction != null && !resolutionAction.isBlank()) {
                 issue.setResolutionAction(resolutionAction);
             }
