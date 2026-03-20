@@ -31,17 +31,25 @@ const EmployeeVerification = () => {
 
   const handleVerify = async (e) => {
     e.preventDefault();
+    if (!formData.managerId || !formData.departmentId || !formData.designation) {
+      alert('Please fill in all fields: Manager, Department, and Designation.');
+      return;
+    }
     setLoading(true);
     try {
       await api.post('/hr/verification/approve', {
         userId: selectedUser.id,
-        ...formData
+        managerId: parseInt(formData.managerId, 10),
+        departmentId: parseInt(formData.departmentId, 10),
+        designation: formData.designation
       });
+      alert(`Employee "${selectedUser.username}" verified successfully!`);
       setSelectedUser(null);
       setFormData({ managerId: '', departmentId: '', designation: '' });
       fetchData();
     } catch (err) {
-      alert('Error verifying employee');
+      const msg = err?.response?.data || 'Error verifying employee';
+      alert(typeof msg === 'string' ? msg : 'Error verifying employee');
     } finally {
       setLoading(false);
     }

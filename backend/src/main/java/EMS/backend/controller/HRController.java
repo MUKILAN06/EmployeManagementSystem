@@ -33,7 +33,12 @@ public class HRController {
  
     @PostMapping("/verification/approve")
     public ResponseEntity<?> approve(@RequestBody VerificationApprovalRequest request) {
-        return ResponseEntity.ok(employeeService.verifyEmployee(request));
+        try {
+            return ResponseEntity.ok(employeeService.verifyEmployee(request));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        }
     }
  
      @GetMapping("/managers")

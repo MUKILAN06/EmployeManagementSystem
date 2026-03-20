@@ -88,8 +88,15 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         Employee saved = employeeRepository.save(employee);
         
-        // Send Email with personalized message
-        emailService.sendCredentialsEmail(user.getEmail(), user.getUsername(), adminPassword);
+        // Send Email - non-fatal, employee is verified regardless
+        try {
+            if (adminPassword != null && !adminPassword.isBlank()) {
+                emailService.sendCredentialsEmail(user.getEmail(), user.getUsername(), adminPassword);
+            }
+        } catch (Exception emailEx) {
+            // Email is optional - don't fail verification if mail is not configured
+            System.err.println("[WARN] Could not send credentials email to " + user.getEmail() + ": " + emailEx.getMessage());
+        }
         
         return saved;
     }
