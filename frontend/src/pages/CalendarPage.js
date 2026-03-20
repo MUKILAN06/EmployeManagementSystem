@@ -3,7 +3,6 @@ import api from '../services/api';
 import { 
   ChevronLeft, 
   ChevronRight, 
-  Plus, 
   Calendar as CalendarIcon, 
   Filter,
   X,
@@ -173,7 +172,6 @@ const CalendarPage = () => {
             {dayTasks.map((task, idx) => {
               const user = task.assignedTo?.user;
               const fullName = user?.firstName ? `${user.firstName} ${user.lastName || ''}` : user?.username || 'N/A';
-              const dept = task.assignedTo?.department?.name || 'N/A';
               
               return (
                 <div 
@@ -271,7 +269,6 @@ const CalendarPage = () => {
                 {dayTasks.map(task => {
                   const user = task.assignedTo?.user;
                   const fullName = user?.firstName ? `${user.firstName} ${user.lastName || ''}` : user?.username || 'Unknown';
-                  const dept = task.assignedTo?.department?.name || 'No Dept';
 
                   return (
                     <div 

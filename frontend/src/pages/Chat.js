@@ -4,7 +4,7 @@ import SockJS from 'sockjs-client';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { 
-  Send, Users, User, Hash, Plus, MessageSquare, 
+  Send, Users, User, Hash, Plus, 
   Search, Info, MoreVertical, Paperclip, Smile, X, Check
 } from 'lucide-react';
 
@@ -17,7 +17,7 @@ const Chat = () => {
   const [selectedChat, setSelectedChat] = useState({ type: 'community', id: 'global', name: 'Community Chat' });
   const [stompClient, setStompClient] = useState(null);
   const [connected, setConnected] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const [newGroupName, setNewGroupName] = useState('');
   const [selectedMembers, setSelectedMembers] = useState([]);
@@ -82,10 +82,12 @@ const Chat = () => {
     setStompClient(client);
 
     return () => client.deactivate();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user.username]); // Only reconnect if user identity changes
 
   useEffect(() => {
       fetchHistory();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedChat]);
 
   useEffect(() => {

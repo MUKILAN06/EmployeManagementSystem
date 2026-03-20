@@ -25,6 +25,7 @@ const IssueTracker = () => {
 
   useEffect(() => {
     fetchIssues();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchIssues = async () => {
@@ -112,6 +113,7 @@ const IssueTracker = () => {
     if (targetRoles.length > 0) {
       setFormData(prev => ({ ...prev, targetRole: targetRoles[0] }));
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.role]);
 
   return (

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
-  PieChart, Pie, Cell, LineChart, Line 
+  PieChart, Pie, Cell 
 } from 'recharts';
 import { useAuth } from '../context/AuthContext';
 import { Users, Building, Calendar, AlertCircle, Shield, Workflow, UserCheck, Mail, Clock } from 'lucide-react';
