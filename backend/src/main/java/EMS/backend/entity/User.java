@@ -3,6 +3,7 @@ package EMS.backend.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -28,6 +29,7 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
+    @JsonIgnore
     @Column(nullable = false)
     private String password;
 
@@ -44,5 +46,6 @@ public class User {
     @CreationTimestamp
     private LocalDateTime createdAt;
 
+    @JsonIgnore
     private String tempPassword;
 }

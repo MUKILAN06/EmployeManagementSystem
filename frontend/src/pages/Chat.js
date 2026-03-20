@@ -31,8 +31,10 @@ const Chat = () => {
 
   useEffect(() => {
     fetchInitialData();
+    const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
+    const wsBase = apiUrl.replace(/\/api$/, '');
     const client = new Client({
-      webSocketFactory: () => new SockJS('http://localhost:8080/ws-chat'),
+      webSocketFactory: () => new SockJS(`${wsBase}/ws-chat`),
       connectHeaders: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`
       },
