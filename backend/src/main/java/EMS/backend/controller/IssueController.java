@@ -1,6 +1,7 @@
 package EMS.backend.controller;
 
 import EMS.backend.dto.IssueDTO;
+import EMS.backend.entity.Role;
 import EMS.backend.service.IssueService;
 import EMS.backend.service.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,8 +19,13 @@ public class IssueController {
 
     @PostMapping("/create")
     public ResponseEntity<?> create(@RequestBody IssueDTO dto, Authentication auth) {
-        UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
-        return ResponseEntity.ok(issueService.createIssue(dto, userDetails.getId()));
+        try {
+            UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+            return ResponseEntity.ok(issueService.createIssue(dto, userDetails.getId()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        }
     }
 
     @GetMapping("/my-reported")
@@ -30,13 +36,30 @@ public class IssueController {
 
     @GetMapping("/assigned-to-me")
     public ResponseEntity<?> getAssignedToMe(Authentication auth) {
-        UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
-        return ResponseEntity.ok(issueService.getIssuesAssignedTo(userDetails.getId()));
+        try {
+            UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+            // Get role from authorities
+            String roleStr = userDetails.getAuthorities().stream()
+                    .findFirst()
+                    .map(a -> a.getAuthority().replace("ROLE_", ""))
+                    .orElse("EMPLOYEE");
+            
+            Role role = Role.valueOf(roleStr);
+            return ResponseEntity.ok(issueService.getIssuesByRole(role));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        }
     }
 
-    @PostMapping("/resolve/{id}")
-    public ResponseEntity<?> resolve(@PathVariable Long id, Authentication auth) {
-        UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
-        return ResponseEntity.ok(issueService.resolveIssue(id, userDetails.getId()));
+    @PostMapping("/update-status/{id}")
+    public ResponseEntity<?> updateStatus(@PathVariable Long id, @RequestParam String status, @RequestParam(required = false) String resolutionAction, Authentication auth) {
+        try {
+            UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+            return ResponseEntity.ok(issueService.updateIssueStatus(id, status, userDetails.getId(), resolutionAction));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        }
     }
 }

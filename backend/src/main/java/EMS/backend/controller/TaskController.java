@@ -41,7 +41,8 @@ public class TaskController {
                 .description(taskDTO.getDescription())
                 .assignedTo(employee)
                 .assignedBy(manager)
-                .assignedAt(LocalDateTime.now())
+                .startDate(taskDTO.getStartDate() != null && !taskDTO.getStartDate().isBlank() ? java.time.LocalDate.parse(taskDTO.getStartDate()).atStartOfDay() : LocalDateTime.now())
+                .endDate(taskDTO.getEndDate() != null && !taskDTO.getEndDate().isBlank() ? java.time.LocalDate.parse(taskDTO.getEndDate()).atStartOfDay().plusHours(23).plusMinutes(59) : LocalDateTime.now().plusDays(1))
                 .completed(false)
                 .build();
 

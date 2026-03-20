@@ -19,16 +19,20 @@ public class AdminInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        if (!userRepository.existsByUsername("admin")) {
+        String adminEmail = "admin@ems.com";
+        String adminPass = "admin123";
+        if (!userRepository.existsByEmail(adminEmail)) {
             User admin = User.builder()
-                    .username("admin")
-                    .email("admin@ems.com")
-                    .password(encoder.encode("password2004"))
+                    .username(adminEmail)
+                    .email(adminEmail)
+                    .password(encoder.encode(adminPass))
                     .role(Role.ADMIN)
                     .verified(true)
                     .build();
             userRepository.save(admin);
-            System.out.println("Default Admin account created: admin / password2004");
+            System.out.println("Default Admin account created!");
+            System.out.println("Login: " + adminEmail);
+            System.out.println("Pass: " + adminPass);
         }
     }
 }

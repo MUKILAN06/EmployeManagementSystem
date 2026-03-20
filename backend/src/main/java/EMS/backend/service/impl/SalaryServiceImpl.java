@@ -5,9 +5,11 @@ import EMS.backend.entity.Employee;
 import EMS.backend.entity.Salary;
 import EMS.backend.repository.EmployeeRepository;
 import EMS.backend.repository.SalaryRepository;
+import EMS.backend.service.EmailService;
 import EMS.backend.service.SalaryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,7 +23,11 @@ public class SalaryServiceImpl implements SalaryService {
     @Autowired
     private EmployeeRepository employeeRepository;
 
+    @Autowired
+    private EmailService emailService;
+
     @Override
+    @Transactional
     public Salary setSalary(SalaryRequest request) {
         Employee employee = employeeRepository.findById(request.getEmployeeId())
                 .orElseThrow(() -> new RuntimeException("Employee not found"));
@@ -32,10 +38,21 @@ public class SalaryServiceImpl implements SalaryService {
         salary.setNotes(request.getNotes());
         salary.setUpdatedAt(LocalDateTime.now());
 
-        return salaryRepository.save(salary);
+        Salary saved = salaryRepository.save(salary);
+        
+        // Notify employee
+        emailService.sendSalaryUpdateEmail(
+                employee.getUser().getEmail(), 
+                employee.getUser().getUsername(), 
+                request.getAmount().doubleValue(), 
+                request.getNotes()
+        );
+        
+        return saved;
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Salary getEmployeeSalary(Long userId) {
         Employee employee = employeeRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("Employee profile not found"));
@@ -44,6 +61,7 @@ public class SalaryServiceImpl implements SalaryService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Salary> getAllSalaries() {
         return salaryRepository.findAll();
     }

@@ -13,4 +13,5 @@ public interface LeaveService {
     List<LeaveRequest> getPendingForHR();
     List<LeaveRequest> getPendingForManager(Long managerUserId);
     List<LeaveRequest> getEmployeeLeaves(Long userId);
+    List<LeaveRequest> getAllForManager(Long managerUserId);
 }

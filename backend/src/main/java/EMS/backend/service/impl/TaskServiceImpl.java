@@ -39,7 +39,8 @@ public class TaskServiceImpl implements TaskService {
                 .description(dto.getDescription())
                 .assignedTo(employee)
                 .assignedBy(manager)
-                .assignedAt(LocalDateTime.now())
+                .startDate(dto.getStartDate() != null && !dto.getStartDate().isBlank() ? java.time.LocalDate.parse(dto.getStartDate()).atStartOfDay() : LocalDateTime.now())
+                .endDate(dto.getEndDate() != null && !dto.getEndDate().isBlank() ? java.time.LocalDate.parse(dto.getEndDate()).atStartOfDay().plusHours(23).plusMinutes(59) : LocalDateTime.now().plusDays(1))
                 .completed(false)
                 .build();
         return taskRepository.save(task);

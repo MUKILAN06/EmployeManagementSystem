@@ -9,6 +9,7 @@ import EMS.backend.entity.User;
 import EMS.backend.repository.DepartmentRepository;
 import EMS.backend.repository.EmployeeRepository;
 import EMS.backend.repository.UserRepository;
+import EMS.backend.service.EmailService;
 import EMS.backend.service.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -33,13 +34,24 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private EmailService emailService;
+
     @Override
     public User createUnverifiedUser(UserCreationRequest request) {
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new RuntimeException("Username is already taken!");
+        }
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("Email is already in use!");
+        }
+
         Role role = Role.valueOf(request.getRole().toUpperCase());
         User user = User.builder()
                 .username(request.getUsername())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
+                .tempPassword(request.getPassword())
                 .role(role)
                 .verified(role != Role.EMPLOYEE)
                 .build();
@@ -59,6 +71,12 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .orElseThrow(() -> new RuntimeException("Department not found"));
 
         user.setVerified(true);
+        
+        // Get the original admin-created password
+        String adminPassword = user.getTempPassword();
+        
+        // Clear the temporary password for security
+        user.setTempPassword(null);
         userRepository.save(user);
 
         Employee employee = Employee.builder()
@@ -68,7 +86,12 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .designation(request.getDesignation())
                 .build();
 
-        return employeeRepository.save(employee);
+        Employee saved = employeeRepository.save(employee);
+        
+        // Send Email with personalized message
+        emailService.sendCredentialsEmail(user.getEmail(), user.getUsername(), adminPassword);
+        
+        return saved;
     }
 
     @Override
@@ -79,6 +102,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Employee> getAllEmployees() {
         return employeeRepository.findAll();
     }

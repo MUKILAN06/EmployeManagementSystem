@@ -2,6 +2,7 @@ package EMS.backend.service.impl;
 
 import EMS.backend.dto.IssueDTO;
 import EMS.backend.entity.Issue;
+import EMS.backend.entity.Role;
 import EMS.backend.entity.User;
 import EMS.backend.repository.IssueRepository;
 import EMS.backend.repository.UserRepository;
@@ -26,47 +27,55 @@ public class IssueServiceImpl implements IssueService {
         User reporter = userRepository.findById(reporterId)
                 .orElseThrow(() -> new RuntimeException("Reporter not found"));
 
-        User assignedTo = userRepository.findById(dto.getAssignedToId())
-                .orElseThrow(() -> new RuntimeException("Assignee not found"));
-
         Issue issue = Issue.builder()
                 .title(dto.getTitle())
                 .description(dto.getDescription())
                 .reportedBy(reporter)
-                .assignedTo(assignedTo)
+                .targetRole(Role.valueOf(dto.getTargetRole() != null ? dto.getTargetRole().toUpperCase() : "HR"))
                 .reportedAt(LocalDateTime.now())
-                .resolved(false)
+                .status("PENDING")
                 .build();
         return issueRepository.save(issue);
     }
 
     @Override
-    public List<Issue> getIssuesAssignedTo(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        return issueRepository.findByAssignedTo(user);
+    public List<Issue> getIssuesByRole(Role role) {
+        return issueRepository.findByTargetRole(role);
     }
 
     @Override
     public List<Issue> getIssuesReportedBy(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        return issueRepository.findAll().stream()
-                .filter(i -> i.getReportedBy().getId().equals(userId))
-                .toList();
+        return issueRepository.findByReportedBy(user);
     }
 
     @Override
-    public Issue resolveIssue(Long issueId, Long userId) {
+    public Issue updateIssueStatus(Long issueId, String status, Long userId, String resolutionAction) {
         Issue issue = issueRepository.findById(issueId)
                 .orElseThrow(() -> new RuntimeException("Issue not found"));
 
-        if (!issue.getAssignedTo().getId().equals(userId)) {
-            throw new RuntimeException("Unauthorized to resolve this issue");
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Check if user has the target role
+        if (user.getRole() != issue.getTargetRole()) {
+            throw new RuntimeException("Unauthorized: You do not have the required role to update this issue");
         }
 
-        issue.setResolved(true);
-        issue.setResolvedAt(LocalDateTime.now());
+        issue.setStatus(status);
+        issue.setAssignedTo(user); // The person who updates it becomes the assignee
+        issue.setUpdatedAt(LocalDateTime.now());
+        
+        if ("VERIFYING".equalsIgnoreCase(status) && issue.getVerifyingAt() == null) {
+            issue.setVerifyingAt(LocalDateTime.now());
+        } else if ("COMPLETED".equalsIgnoreCase(status)) {
+            issue.setResolvedAt(LocalDateTime.now());
+            if (resolutionAction != null && !resolutionAction.isBlank()) {
+                issue.setResolutionAction(resolutionAction);
+            }
+        }
+        
         return issueRepository.save(issue);
     }
 }

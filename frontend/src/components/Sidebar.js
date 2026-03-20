@@ -10,7 +10,8 @@ import {
   Briefcase, 
   AlertCircle, 
   Banknote,
-  LogOut
+  LogOut,
+  MessageCircle
 } from 'lucide-react';
 
 const Sidebar = () => {
@@ -20,9 +21,12 @@ const Sidebar = () => {
   const menuItems = {
     ADMIN: [
       { path: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-      { path: '/admin/employee-creation', label: 'Add Employee', icon: Users },
+      { path: '/admin/employee-creation', label: 'Create Employee', icon: UserPlus },
       { path: '/admin/hr-creation', label: 'Create HR', icon: UserCheck },
       { path: '/admin/departments', label: 'Departments', icon: Briefcase },
+      { path: '/admin/issues', label: 'Issues', icon: AlertCircle },
+      { path: '/chat', label: 'Community Chat', icon: MessageCircle },
+      { path: '/calendar', label: 'Calendar', icon: Calendar },
     ],
     HR: [
       { path: '/hr', label: 'Dashboard', icon: LayoutDashboard },
@@ -30,11 +34,17 @@ const Sidebar = () => {
       { path: '/hr/manager-creation', label: 'Add Manager', icon: UserPlus },
       { path: '/hr/leaves', label: 'Leaves', icon: Calendar },
       { path: '/hr/salaries', label: 'Salaries', icon: Banknote },
+      { path: '/hr/issues', label: 'Issues', icon: AlertCircle },
+      { path: '/chat', label: 'Community Chat', icon: MessageCircle },
+      { path: '/calendar', label: 'Calendar', icon: Calendar },
     ],
     MANAGER: [
       { path: '/manager', label: 'Dashboard', icon: LayoutDashboard },
       { path: '/manager/tasks', label: 'Assign Tasks', icon: Briefcase },
       { path: '/manager/leaves', label: 'Leave Requests', icon: Calendar },
+      { path: '/manager/issues', label: 'Issues', icon: AlertCircle },
+      { path: '/chat', label: 'Community Chat', icon: MessageCircle },
+      { path: '/calendar', label: 'Calendar', icon: Calendar },
     ],
     EMPLOYEE: [
       { path: '/employee', label: 'Dashboard', icon: LayoutDashboard },
@@ -42,6 +52,8 @@ const Sidebar = () => {
       { path: '/employee/tasks', label: 'My Tasks', icon: Briefcase },
       { path: '/employee/salary', label: 'My Salary', icon: Banknote },
       { path: '/employee/issues', label: 'Issues', icon: AlertCircle },
+      { path: '/chat', label: 'Community Chat', icon: MessageCircle },
+      { path: '/calendar', label: 'Calendar', icon: Calendar },
     ]
   };
 

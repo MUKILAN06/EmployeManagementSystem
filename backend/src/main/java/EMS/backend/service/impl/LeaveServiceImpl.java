@@ -7,6 +7,8 @@ import EMS.backend.entity.LeaveStatus;
 import EMS.backend.repository.EmployeeRepository;
 import EMS.backend.repository.LeaveRequestRepository;
 import EMS.backend.service.LeaveService;
+import EMS.backend.entity.User;
+import EMS.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +25,9 @@ public class LeaveServiceImpl implements LeaveService {
 
     @Autowired
     private EmployeeRepository employeeRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     private static void dbg(String hypothesisId, String location, String message, String dataJson) {
         try (FileWriter fw = new FileWriter("D:/study/EMS/debug-2f3b79.log", true)) {
@@ -130,5 +135,12 @@ public class LeaveServiceImpl implements LeaveService {
         List<LeaveRequest> leaves = leaveRepository.findByEmployee(employee);
         dbg("H3", "LeaveServiceImpl:getEmployeeLeaves", "Loaded employee leaves", "{\"count\":" + leaves.size() + "}");
         return leaves;
+    }
+
+    @Override
+    public List<LeaveRequest> getAllForManager(Long managerUserId) {
+        User manager = userRepository.findById(managerUserId)
+                .orElseThrow(() -> new RuntimeException("Manager user not found"));
+        return leaveRepository.findByEmployeeManager(manager);
     }
 }

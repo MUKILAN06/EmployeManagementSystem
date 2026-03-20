@@ -29,7 +29,8 @@ public class WorkTask {
     @JoinColumn(name = "assigned_by_id", nullable = false)
     private User assignedBy;
 
-    private LocalDateTime assignedAt;
-
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
+    @Builder.Default
     private boolean completed = false;
 }

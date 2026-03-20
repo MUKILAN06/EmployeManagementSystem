@@ -9,6 +9,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import EMS.backend.entity.User;
+import EMS.backend.entity.Employee;
+import EMS.backend.repository.EmployeeRepository;
+import EMS.backend.repository.UserRepository;
+import java.util.List;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -21,6 +26,26 @@ public class ManagerController {
  
     @Autowired
     private TaskService taskService;
+
+    @Autowired
+    private EmployeeRepository employeeRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @GetMapping("/employees")
+    public List<Employee> getMyEmployees(Authentication auth) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+        User manager = userRepository.findById(userDetails.getId())
+                .orElseThrow(() -> new RuntimeException("Manager not found"));
+        
+        if (manager.getDepartment() != null) {
+            return employeeRepository.findByDepartmentId(manager.getDepartment().getId());
+        }
+        
+        // Fallback to directly managed employees if no dept set
+        return employeeRepository.findByManager(manager);
+    }
 
     @GetMapping("/leaves/pending")
     public ResponseEntity<?> getPendingLeaves(Authentication auth) {

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import api from '../services/api';
-import { UserPlus, CheckCircle, AlertCircle } from 'lucide-react';
+import { UserPlus, CheckCircle, AlertCircle, Eye, EyeOff } from 'lucide-react';
 
 const ManagerCreation = () => {
   const [formData, setFormData] = useState({
@@ -11,6 +11,7 @@ const ManagerCreation = () => {
   });
   const [message, setMessage] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -77,14 +78,23 @@ const ManagerCreation = () => {
 
           <div className="space-y-2.5">
             <label className="text-sm font-bold text-slate-700 ml-1 block uppercase tracking-wider">Password</label>
-            <input
-              type="password"
-              required
-              placeholder="••••••••"
-              className="w-full px-5 py-4 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-medium placeholder:text-slate-400"
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                required
+                placeholder="••••••••"
+                className="w-full px-5 py-4 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-medium placeholder:text-slate-400 pr-14"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              />
+              <button
+                type="button"
+                className="absolute inset-y-0 right-0 pr-5 flex items-center text-slate-400 hover:text-indigo-600 transition-colors"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
+              </button>
+            </div>
           </div>
 
           <button

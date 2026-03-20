@@ -7,4 +7,6 @@ public class WorkTaskDTO {
     private String title;
     private String description;
     private Long assignedToId;
+    private String startDate;
+    private String endDate;
 }

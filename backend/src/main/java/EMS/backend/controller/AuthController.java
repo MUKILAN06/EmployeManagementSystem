@@ -24,41 +24,48 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
     @Autowired
     AuthenticationManager authenticationManager;
- 
+
     @Autowired
     UserRepository userRepository;
- 
+
     @Autowired
     PasswordEncoder encoder;
- 
+
     @Autowired
     JwtUtils jwtUtils;
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
- 
+
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
- 
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        
-        // ADMIN is pre-verified or doesn't need verification
-        if (!userDetails.isVerified() && !userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Error: User account is not verified yet!"));
-        }
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtUtils.generateJwtToken(authentication);
 
-        String role = userDetails.getAuthorities().iterator().next().getAuthority().replace("ROLE_", "");
- 
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+
+        // Verify the user selected role matches real role
+        String requestedRole = "ROLE_" + loginRequest.getRole().toUpperCase();
+        if (!userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals(requestedRole))) {
+            return ResponseEntity.status(401).body(new MessageResponse("Error: Unauthorized role selection!"));
+        }
+
+        // ADMIN is pre-verified or doesn't need verification
+        if (!userDetails.isEnabled()
+                && !userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Error: User account is not verified yet!"));
+        }
+
+        String actualRole = userDetails.getAuthorities().iterator().next().getAuthority().replace("ROLE_", "");
+
         return ResponseEntity.ok(new JwtResponse(jwt,
                 userDetails.getId(),
                 userDetails.getUsername(),
                 userDetails.getEmail(),
-                role));
+                actualRole));
     }
- 
+
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@Valid @RequestBody UserCreationRequest signUpRequest) {
         if (userRepository.existsByUsername(signUpRequest.getUsername())) {
@@ -66,13 +73,13 @@ public class AuthController {
                     .badRequest()
                     .body(new MessageResponse("Error: Username is already taken!"));
         }
- 
+
         if (userRepository.existsByEmail(signUpRequest.getEmail())) {
             return ResponseEntity
                     .badRequest()
                     .body(new MessageResponse("Error: Email is already in use!"));
         }
- 
+
         // Create new user's account
         User user = User.builder()
                 .username(signUpRequest.getUsername())
@@ -81,9 +88,9 @@ public class AuthController {
                 .role(Role.valueOf(signUpRequest.getRole().toUpperCase()))
                 .verified(false) // Needs verification
                 .build();
- 
+
         userRepository.save(user);
- 
+
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
     }
 }

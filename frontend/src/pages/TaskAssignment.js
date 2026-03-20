@@ -6,13 +6,23 @@ const TaskAssignment = () => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    assignedToId: ''
+    assignedToId: '',
+    startDate: '',
+    endDate: ''
   });
+  const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Ideally we want to get employees assigned to THIS manager
-    // For now we just use a dummy or a broad list
+    const fetchEmployees = async () => {
+        try {
+            const res = await api.get('/manager/employees');
+            setEmployees(res.data);
+        } catch (err) {
+            console.error("Error fetching employees:", err);
+        }
+    };
+    fetchEmployees();
   }, []);
 
   const handleSubmit = async (e) => {
@@ -21,7 +31,7 @@ const TaskAssignment = () => {
     try {
       await api.post('/manager/task/assign', formData);
       alert('Task assigned successfully!');
-      setFormData({ title: '', description: '', assignedToId: '' });
+      setFormData({ title: '', description: '', assignedToId: '', startDate: '', endDate: '' });
     } catch (err) {
       alert('Error assigning task');
     } finally {
@@ -63,21 +73,49 @@ const TaskAssignment = () => {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-700">Assign To (Employee ID)</label>
+            <label className="text-sm font-semibold text-slate-700">Assign To Team Member</label>
             <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
                     <Users size={18} />
                 </div>
-                <input
-                    type="number"
+                <select
                     required
-                    placeholder="Enter Employee ID"
-                    className="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all"
+                    className="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all appearance-none bg-white"
                     value={formData.assignedToId}
                     onChange={(e) => setFormData({ ...formData, assignedToId: e.target.value })}
+                >
+                    <option value="">Select an Employee</option>
+                    {employees.map(emp => (
+                        <option key={emp.id} value={emp.id}>
+                            {emp.user?.firstName || emp.user?.username} ({emp.department?.name})
+                        </option>
+                    ))}
+                </select>
+            </div>
+            <p className="text-xs text-slate-400 mt-1 italic">Only employees in your department are listed.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-700">Start Date</label>
+                <input
+                    type="date"
+                    required
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all"
+                    value={formData.startDate}
+                    onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
                 />
             </div>
-            <p className="text-xs text-slate-400 mt-1 italic">Use ID from the employee dashboard.</p>
+            <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-700">Deadline (End Date)</label>
+                <input
+                    type="date"
+                    required
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all"
+                    value={formData.endDate}
+                    onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                />
+            </div>
           </div>
 
           <div className="space-y-2">

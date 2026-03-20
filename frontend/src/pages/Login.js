@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Lock, User, LogIn, AlertCircle, ChevronDown, CheckCircle } from 'lucide-react';
+import { Lock, User, LogIn, AlertCircle, ChevronDown, CheckCircle, Eye, EyeOff } from 'lucide-react';
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -10,6 +10,7 @@ const Login = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -29,12 +30,7 @@ const Login = () => {
     setSuccess('');
     setLoading(true);
     try {
-      const user = await login(username, password);
-      // Explicit requirement: Admin credentials redirect to admin page regardless of selection
-      if (user.role === 'ADMIN') {
-        navigate('/admin');
-        return;
-      }
+      const user = await login(username, password, role);
       
       const rolePaths = {
         ADMIN: '/admin',
@@ -44,7 +40,7 @@ const Login = () => {
       };
       navigate(rolePaths[user.role] || '/');
     } catch (err) {
-      setError('Invalid username or password');
+      setError(err.response?.data?.message || 'Invalid username or password');
     } finally {
       setLoading(false);
     }
@@ -81,7 +77,7 @@ const Login = () => {
             )}
 
             <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-400 ml-2">Username</label>
+              <label className="text-sm font-bold text-slate-400 ml-2">Username or Email</label>
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-500 group-focus-within:text-blue-500 transition-colors">
                   <User size={20} />
@@ -90,7 +86,7 @@ const Login = () => {
                   type="text"
                   required
                   className="block w-full pl-14 pr-5 py-4 bg-slate-800/40 border border-white/5 rounded-2xl text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 transition-all text-lg"
-                  placeholder="Your username"
+                  placeholder="Your username or email"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                 />
@@ -104,13 +100,20 @@ const Login = () => {
                   <Lock size={20} />
                 </div>
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   required
-                  className="block w-full pl-14 pr-5 py-4 bg-slate-800/40 border border-white/5 rounded-2xl text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 transition-all text-lg"
+                  className="block w-full pl-14 pr-12 py-4 bg-slate-800/40 border border-white/5 rounded-2xl text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 transition-all text-lg"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-5 flex items-center text-slate-500 hover:text-white transition-colors"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
               </div>
             </div>
 
@@ -128,6 +131,7 @@ const Login = () => {
                   <option value="EMPLOYEE" className="bg-slate-900">Employee</option>
                   <option value="MANAGER" className="bg-slate-900">Manager</option>
                   <option value="HR" className="bg-slate-900">HR</option>
+                  <option value="ADMIN" className="bg-slate-900">Admin</option>
                 </select>
               </div>
             </div>
@@ -147,8 +151,7 @@ const Login = () => {
               )}
             </button>
           </form>
-
- commit        </div>
+        </div>
       </div>
     </div>
   );
